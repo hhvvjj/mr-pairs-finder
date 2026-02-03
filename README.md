@@ -85,19 +85,16 @@ cd mr-pairs-finder
 #### Build Commands
 
 ```bash
-# Standard compilation
-gcc -fopenmp -O3 -std=c99 -Wall -Wextra mr_pairs_finder.c -o mr_pairs_finder
+# Production
+gcc -fopenmp -O3 -march=native -std=c99 -Wall -Wextra mr_pairs_finder.c -o mr_pairs_finder
 
-# Debug build
-gcc -fopenmp -O0 -g -std=c99 -Wall -Wextra -DDEBUG mr_pairs_finder.c -o mr_pairs_finder_debug
-
-# Optimized build (recommended)
-gcc -O3 -march=native -fopenmp mr_pairs_finder.c -o mr_pairs_finder
+# Debug
+gcc -fopenmp -O0 -g -std=c99 -Wall -Wextra -Wpedantic mr_pairs_finder.c -o mr_pairs_finder_debug
 ```
 
 ## Usage
 
-```
+```bash
 ./mr_pairs_finder <exponent>
 ```
 
