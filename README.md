@@ -268,7 +268,7 @@ Results are exported to a JSON file with the naming convention:
 If you use this framework in your research, please cite:
 
 ```bibtex
-@software{hernandez2006mrpairsfinder,
+@software{hernandez2026mrpairsfinder,
   title={mr Pairs Finder},
   author={Hernandez, Javier},
   year={2026},

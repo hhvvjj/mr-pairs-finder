@@ -14,7 +14,7 @@
 //
 //   During the tuple-based transform representation, the multiplicity parameter m repeats
 //   two elements (consecutively or at different distances), creating pseudocycles. These two
-//   values, named as mr, are shown at the ends of a pseudocycle.
+//   values, named as mr, are shown at the ends of a pseudocycle (Theorems 5.5, 5.6 and 5.7).
 //
 //   This is a high-performance parallel search engine to find mr pairs. It efficiently 
 //   detects pseudocycles by analyzing the m-value repetition and generates detailed JSON
@@ -25,7 +25,7 @@
 //   Research findings show that mr value discovery exhibits remarkable sparsity across large
 //   computational ranges. Comprehensive analysis of the complete range 1 to 2^40, 1099511627775
 //   numbers, reveals only 42 distinct mr values, suggesting that unique pseudocycle patterns
-//   are extremely rare phenomena in Collatz sequence behavior.
+//   are extremely rare phenomena in Collatz sequence behavior (Remark 6.17).
 //
 //   The list of these 42 mr values is: 0, 1, 2, 3, 6, 7, 8, 9, 12, 16, 19, 25, 45, 53, 60, 79,
 //   91, 121, 125, 141, 166, 188, 205, 243, 250, 324, 333, 432, 444, 487, 576, 592, 649, 667,
@@ -191,9 +191,9 @@ typedef struct {
  * @brief Thread-safe statistics for sequence classification (A, B, C types)
  * 
  * Collects distribution statistics for all sequences in the search range:
- * - Type A: mr=0 (reaches trivial cycle without other pseudocycles)
- * - Type B: mr>0 and M*=mr (pseudocycle at maximum m)
- * - Type C: mr>0 and M*>mr (pseudocycle before reaching maximum m)
+ * - Type A: M* appears before the first occurrence of mr (Definition 7.3)
+ * - Type B: M* appears between the first and second occurrence of mr (Definition 7.3)
+ * - Type C: M* appears after the second occurrence of mr (Definition 7.3)
  */
 typedef struct {
     uint64_t type_A_count;      // Sequences where M* appears before first mr
@@ -2327,7 +2327,7 @@ static void report_new_unique_mr(uint64_t mr, uint64_t n, const UniqueMrSet* set
  * and classifying the sequence into one of three types based on the relative positions of M* and mr
  * occurrences within the sequence.
  * 
- * Sequence Classification System:
+ * Sequence Classification System (Definition 7.3):
  * - Type A: M* appears before the first occurrence of mr (or mr=0, no pseudocycle)
  * - Type B: M* appears between the first and second occurrence of mr (M* inside the pseudocycle)
  * - Type C: M* appears after the second occurrence of mr (M* after pseudocycle completion)
@@ -2356,6 +2356,7 @@ static void report_new_unique_mr(uint64_t mr, uint64_t n, const UniqueMrSet* set
  * 
  * @return The first repeated m value (mr). Returns 0 if no repetition occurs before
  *         reaching the trivial cycle (indicating Type A sequence with no pseudocycle).
+ *         Per Definition 6.4, mr is the value whose second occurrence appears earliest.
  * 
  * @note The function uses inline calculations for m and Collatz transforms to maximize
  *       performance in tight loops, avoiding function call overhead.
@@ -2414,7 +2415,7 @@ static uint64_t find_first_mr_in_sequence(uint64_t n_start, bool* found, uint64_
     
     int step = 0;
     while (n != 1) {
-        // Inline calculate_m: m = (c - p) / 2
+        // Inline calculate_m: m = (c - p) / 2 (Definition 2.6, transform φ_1)
         uint64_t p = (n & 1) ? 1 : 2;
         uint64_t m = (n - p) >> 1;
         
@@ -2463,7 +2464,7 @@ static uint64_t find_first_mr_in_sequence(uint64_t n_start, bool* found, uint64_
     *found = true;
     *M_star = max_m;
     
-    // Classify sequence type
+    // Classify sequence type per Definition 7.3
     if (first_mr == 0) {
         *sequence_type = 'A';
     } else if (max_m_position < first_occurrence_position) {
@@ -2509,6 +2510,8 @@ static uint64_t find_first_mr_in_sequence(uint64_t n_start, bool* found, uint64_
  * 
  * @note All sequences yield an mr value (0 or positive), so found count always increments.
  *       This differs from search patterns where only some inputs produce valid results.
+ * 
+ * @note The exhaustive partition of Z+ into classes S(mr) is guaranteed by Lemma 6.5.
  * 
  * @note The function performs thread-safe operations on shared structures (unique_set, progress, stats)
  *       while maintaining local counters to minimize atomic operation overhead.
